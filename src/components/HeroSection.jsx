@@ -74,7 +74,8 @@ export function HeroSection({
         </div>
 
         {/* Dynamic Persona Hero Content */}
-        {userPersona === 'seller' ? (\n          /* ================= SELLER VIEW ================= */
+        {userPersona === 'seller' ? (
+          /* ================= SELLER VIEW ================= */
           <div className="text-center max-w-4xl mx-auto space-y-4 animate-in fade-in duration-300">
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display text-white leading-tight">
               Relocating Abroad? Liquidate Your Nigerian Properties <br className="hidden sm:inline" />
@@ -160,14 +161,7 @@ export function HeroSection({
                 <span>Explore Verified Relocation Listings</span>
               </button>
               
-              {!currentUser && (\n                <button
-                  onClick={onOpenAuth}
-                  className="btn-secondary px-6 py-3.5 text-sm sm:text-base border border-amber-500/40 text-amber-300 hover:bg-amber-950/40"
-                >
-                  <UserCheck className="w-4 h-4 text-amber-400" />
-                  <span>Create Free Account / SSO</span>
-                </button>
-              )}
+              {!currentUser && (\n                <button\n                  onClick={onOpenAuth}\n                  className=\"btn-secondary px-6 py-3.5 text-sm sm:text-base border border-amber-500/40 text-amber-300 hover:bg-amber-950/40\"\n                >\n                  <UserCheck className=\"w-4 h-4 text-amber-400\" />\n                  <span>Create Free Account / SSO</span>\n                </button>\n              )}
             </div>
           </div>
         )}

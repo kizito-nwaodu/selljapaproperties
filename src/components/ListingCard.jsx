@@ -59,7 +59,8 @@ export function ListingCard({ listing, currency, onSelectListing }) {
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-          {listing.category === 'bundle' && (\n            <span className="badge-bundle px-2.5 py-1 rounded-lg text-[11px] font-extrabold flex items-center gap-1 backdrop-blur-md shadow">
+          {listing.category === 'bundle' && (
+            <span className="badge-bundle px-2.5 py-1 rounded-lg text-[11px] font-extrabold flex items-center gap-1 backdrop-blur-md shadow">
               <Sparkles className="w-3 h-3 text-amber-300" />
               Whole-House Bundle
             </span>
@@ -84,7 +85,8 @@ export function ListingCard({ listing, currency, onSelectListing }) {
         </div>
 
         {/* Sold Overlay on Image */}
-        {listing.isSold && (\n          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+        {listing.isSold && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <div className="border-2 border-red-500 text-red-400 font-extrabold text-sm px-4 py-1.5 rounded-xl rotate-[-8deg] tracking-wider uppercase bg-black/80 shadow-lg">
               SOLD VIA ESCROW
             </div>
