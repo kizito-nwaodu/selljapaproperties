@@ -26,13 +26,19 @@ export function HeroSection({
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* User Persona Switcher Tabs - Clean & Responsive */}
+        {/* User Persona Switcher Tabs - Clean & Responsive on All Devices */}
         <div className="flex justify-center mb-6">
-          <div className="inline-flex p-1.5 rounded-2xl bg-stone-900/90 border border-stone-800 backdrop-blur-md shadow-2xl">
+          <div 
+            role="tablist"
+            aria-label="Account Perspective Switcher"
+            className="flex flex-col sm:inline-flex sm:flex-row w-full sm:w-auto p-1.5 rounded-2xl bg-stone-900/90 border border-stone-800 backdrop-blur-md shadow-2xl gap-1 sm:gap-0"
+          >
             <button
               type="button"
+              role="tab"
+              aria-selected={userPersona === 'seller'}
               onClick={() => setUserPersona('seller')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
+              className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 userPersona === 'seller'
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-lg shadow-amber-500/30'
                   : 'text-stone-400 hover:text-white hover:bg-stone-800/60'
@@ -43,8 +49,10 @@ export function HeroSection({
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={userPersona === 'buyer'}
               onClick={() => setUserPersona('buyer')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
+              className={`px-4 sm:px-6 py-3 min-h-[44px] rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 userPersona === 'buyer'
                   ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/30'
                   : 'text-stone-400 hover:text-white hover:bg-stone-800/60'
