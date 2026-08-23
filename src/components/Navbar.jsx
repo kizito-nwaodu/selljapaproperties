@@ -20,7 +20,9 @@ import {
   Lock,
   LayoutDashboard,
   LogIn,
-  UserPlus
+  UserPlus,
+  Compass,
+  BellRing
 } from 'lucide-react';
 import { ALL_STATES, EXCHANGE_RATES } from '../data/mockData';
 
@@ -132,6 +134,21 @@ export function Navbar({
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>Whole-House Bundles</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('scouts')}
+              className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'scouts'
+                  ? 'bg-amber-950/70 text-amber-300 border border-amber-500/60 shadow'
+                  : 'hover:text-amber-400 hover:bg-stone-900/60 text-stone-300'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
+              <span>Scout Network</span>
+              <span className="text-[9px] bg-amber-500/20 text-amber-300 font-extrabold px-1.5 py-0.2 rounded border border-amber-500/40">
+                2% Earn
+              </span>
             </button>
 
             <button
@@ -404,6 +421,17 @@ export function Navbar({
               <span>Whole Bundles</span>
             </button>
             <button
+              onClick={() => { setActiveTab('scouts'); setIsMobileMenuOpen(false); }}
+              className={`p-3 min-h-[44px] rounded-xl font-bold text-center border transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'scouts'
+                  ? 'bg-amber-950 text-amber-300 border-amber-500/60'
+                  : 'bg-stone-900 text-amber-300 border-stone-800'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
+              <span>Scout Network (2%)</span>
+            </button>
+            <button
               onClick={() => { setActiveTab('calculator'); setIsMobileMenuOpen(false); }}
               className={`p-3 min-h-[44px] rounded-xl font-bold text-center border transition-all flex items-center justify-center ${
                 activeTab === 'calculator'
@@ -423,6 +451,17 @@ export function Navbar({
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Escrow & Safety</span>
+            </button>
+            <button
+              onClick={() => { setActiveTab('diaspora'); setIsMobileMenuOpen(false); }}
+              className={`p-3 min-h-[44px] rounded-xl font-bold text-center border transition-all flex items-center justify-center gap-1 ${
+                activeTab === 'diaspora'
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50'
+                  : 'bg-stone-900 text-emerald-300 border-stone-800'
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>Diaspora Hub</span>
             </button>
           </div>
 

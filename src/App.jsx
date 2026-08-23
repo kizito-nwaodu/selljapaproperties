@@ -7,6 +7,7 @@ import { FastValuationCalculator } from './components/FastValuationCalculator';
 import { GeoExplorer } from './components/GeoExplorer';
 import { EscrowSafetyHub } from './components/EscrowSafetyHub';
 import { DiasporaHub } from './components/DiasporaHub';
+import { ScoutNetworkHub } from './components/ScoutNetworkHub';
 import { TestimonialsSection } from './components/TestimonialsSection';
 import { Footer } from './components/Footer';
 
@@ -33,7 +34,7 @@ export function App() {
     }
   });
 
-  const [activeTab, setActiveTab] = useState('explore'); // explore, bundles, calculator, escrow, diaspora
+  const [activeTab, setActiveTab] = useState('explore'); // explore, bundles, calculator, escrow, diaspora, scouts
   const [userPersona, setUserPersona] = useState('seller'); // seller, buyer
   const [selectedState, setSelectedState] = useState("All 36 States + FCT");
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -147,6 +148,7 @@ export function App() {
                 el?.scrollIntoView({ behavior: 'smooth' });
               }}
               onOpenCalculator={() => setActiveTab('calculator')}
+              onOpenScoutHub={() => setActiveTab('scouts')}
               onOpenAuth={handleOpenAuth}
               currentUser={currentUser}
             />
@@ -215,6 +217,17 @@ export function App() {
             onExploreClick={() => setActiveTab('explore')}
             onBackToExplore={() => setActiveTab('explore')}
             onStartCall={handleStartCall}
+          />
+        )}
+
+        {/* CERTIFIED SCOUT NETWORK TAB */}
+        {activeTab === 'scouts' && (
+          <ScoutNetworkHub
+            currency={currency}
+            selectedState={selectedState}
+            onSelectState={(st) => setSelectedState(st)}
+            onOpenSellerWizard={() => setIsSellerWizardOpen(true)}
+            onBackToExplore={() => setActiveTab('explore')}
           />
         )}
 
