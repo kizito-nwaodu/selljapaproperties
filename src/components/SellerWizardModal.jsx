@@ -98,138 +98,216 @@ export function SellerWizardModal({ isOpen, onClose, onAddListing }) {
 
   const handleAddBundleItem = () => {
     if (!newItemName.trim()) return;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       bundledItems: [
-        ...formData.bundledItems,
-        { item: newItemName, individualValue: newItemValue ? `₦${Number(newItemValue).toLocaleString()}` : "Included" }
+        ...prev.bundledItems,
+        { item: newItemName.trim(), individualValue: newItemValue.trim() || 'Included' }
       ]
-    });
+    }));
     setNewItemName("");
     setNewItemValue("");
   };
 
   const handleRemoveBundleItem = (idx) => {
-    setFormData({
-      ...formData,
-      bundledItems: formData.bundledItems.filter((_, i) => i !== idx)
-    });
+    setFormData(prev => ({
+      ...prev,
+      bundledItems: prev.bundledItems.filter((_, i) => i !== idx)
+    }));
   };
 
-  const handleProcessTokenPayment = async (e) => {
+  const handleProcessPayment = (e) => {
     e.preventDefault();
     setIsProcessingPayment(true);
-    
-    // Simulate gateway processing (Paystack / Flutterwave / Moniepoint)
-    await new Promise(r => setTimeout(r, 1500));
-    
-    const txRef = `PAY-JAPA-${Date.now().toString().slice(-6)}`;
-    setPaymentRef(txRef);
-    setPaymentSuccess(true);
-    setIsProcessingPayment(false);
 
-    logApiCall('/api/v1/payments/platform-service-fee', 'POST', {
-      amountNGN: 5000,
-      currency: "NGN",
-      purpose: "SellJapa Platform Service & Listing Marketing Token Fee",
-      sellerName: formData.sellerName || "Relocating Seller",
-      paymentMethod,
-      state: formData.state
-    }, {
-      success: true,
-      transactionReference: txRef,
-      status: "PAID",
-      amountPaid: "₦5,000.00",
-      timestamp: new Date().toISOString()
-    });
+    // Simulate Paystack / Monnify ₦5,000 token payment gateway
+    setTimeout(() => {
+      const generatedRef = `SJ-FEE-${Date.now().toString().slice(-6)}-VERIFIED`;
+      setPaymentRef(generatedRef);
+      setIsProcessingPayment(false);
+      setPaymentSuccess(true);
 
-    try {
-      confetti({
-        particleCount: 140,
-        spread: 90,
-        origin: { y: 0.6 }
+      logApiCall({
+        endpoint: '/api/v1/payments/verify-token-fee',
+        method: 'POST',
+        requestPayload: {
+          amountNGN: 5000,
+          paymentMethod,
+          purpose: 'SellJapa ₦5,000 Platform Service & Anti-Spam Token Fee',
+          sellerName: formData.sellerName || 'Anonymous Relocator'
+        },
+        responsePayload: {
+          status: 'success',
+          reference: generatedRef,
+          paidAt: new Date().toISOString(),
+          escrowTagged: true,
+          scoutDispatched: true
+        }
       });
-    } catch (err) {}
 
-    // Complete Listing creation
-    const newListing = {
-      id: `jp-user-${Date.now()}`,
-      title: formData.title || `${formData.category === 'bundle' ? 'Whole-House Relocation Bundle' : 'Property'} in ${formData.location}`,
-      type: formData.category === 'bundle' ? 'Whole-House Relocation Bundle' : 'Residential Property',
-      category: formData.category,
-      state: formData.state,
-      lga: formData.lga,
-      location: formData.location,
-      priceNGN: Number(formData.priceNGN),
-      originalValueNGN: Number(formData.originalValueNGN),
-      discountPercent: Math.round(((formData.originalValueNGN - formData.priceNGN) / formData.originalValueNGN) * 100) || 20,
-      targetClosingDays: Number(formData.targetClosingDays),
-      destination: "International Relocation",
-      sellerName: formData.sellerName || "Dr. Babatunde A. (Relocator)",
-      sellerProfession: formData.sellerProfession || "Medical / Professional",
-      verifiedTitle: formData.verifiedTitle,
-      inspectionScore: 99,
-      inspectionStatus: "Platform Fee Paid (₦5,000) • Active Listing",
-      scoutCommissionPercent: formData.scoutCommissionPercent,
-      images: uploadedImages.length > 0 ? uploadedImages : [
-        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80"
-      ],
-      features: ["Verified Title", "Platform Service Fee Paid", "Fast Escrow Close"],
-      bundledItems: formData.category === 'bundle' ? formData.bundledItems : [],
-      description: formData.description || `Seller liquidating assets for international relocation with target closing within ${formData.targetClosingDays} days. Protected under legal escrow.`,
-      urgencyLevel: formData.targetClosingDays <= 10 ? "critical" : "high",
-      escrowEligible: true,
-      virtualTourAvailable: true,
-      platformFeePaid: true,
-      paymentRef: txRef
-    };
+      // Confetti Celebration
+      try {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      } catch (err) {}
 
-    onAddListing(newListing);
-    setSubmitted(true);
+      // Finalize and post listing after short delay
+      setTimeout(() => {
+        const discountCalc = Math.max(5, Math.round(((formData.originalValueNGN - formData.priceNGN) / formData.originalValueNGN) * 100));
+        
+        const finalListing = {
+          id: `jp-reloc-${Date.now().toString().slice(-4)}`,
+          title: formData.title || `${formData.type} in ${formData.location}`,
+          category: formData.category,
+          type: formData.type,
+          priceNGN: Number(formData.priceNGN),
+          originalValueNGN: Number(formData.originalValueNGN),
+          discountPercent: discountCalc > 0 ? discountCalc : 15,
+          location: formData.location || `${formData.lga}, ${formData.state}`,
+          state: formData.state,
+          lga: formData.lga,
+          destination: formData.destination,
+          targetClosingDays: Number(formData.targetClosingDays) || 14,
+          sellerName: formData.sellerName || "Verified Relocating Expat",
+          sellerProfession: formData.sellerProfession || "IT / Health Professional",
+          sellerRating: 5.0,
+          verifiedTitle: formData.verifiedTitle,
+          inspectionScore: 98,
+          isSold: false,
+          badges: ["₦5k Fee Paid", "100% Escrow", "2% Scout Tagged"],
+          images: uploadedImages.length > 0 ? uploadedImages : [
+            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80"
+          ],
+          features: [
+            formData.verifiedTitle,
+            "100% Escrow Protected Handover",
+            `2% Scout Verification Commission Attached`,
+            `${formData.targetClosingDays} Days Relocation Window`
+          ],
+          bundledItems: formData.category === 'bundle' ? formData.bundledItems : [],
+          paymentReference: generatedRef,
+          scoutCommissionPercent: 2.0
+        };
+
+        if (onAddListing) {
+          onAddListing(finalListing);
+        }
+        setSubmitted(true);
+      }, 1200);
+
+    }, 1500);
   };
 
+  const discountEstimate = Math.max(0, Math.round(((formData.originalValueNGN - formData.priceNGN) / formData.originalValueNGN) * 100));
+  const estimatedScoutPayout = (Number(formData.priceNGN) * 0.02);
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
-      <div className="relative w-full max-w-3xl glass-panel-emerald rounded-3xl p-4 sm:p-8 bg-[#0b1410] border border-emerald-500/40 shadow-2xl overflow-y-auto max-h-[94vh] sm:max-h-[90vh]">
+    <div 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="seller-wizard-title"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
+    >
+      <div className="relative w-full max-w-2xl glass-panel-gold rounded-3xl p-5 sm:p-8 bg-[#0b1410] border border-amber-500/40 shadow-2xl text-stone-100 max-h-[92vh] flex flex-col justify-between overflow-y-auto pb-8 sm:pb-8">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full bg-stone-900/80 text-stone-400 hover:text-white border border-stone-800 transition-colors z-10 cursor-pointer"
+          type="button"
+          aria-label="Close modal"
+          className="absolute top-4 right-4 p-2 rounded-full bg-stone-900/80 text-stone-400 hover:text-white hover:bg-stone-800 transition-colors cursor-pointer border border-stone-800"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {!submitted ? (
+        {submitted ? (
+          /* ================= SUCCESS CONFIRMATION ================= */
+          <div className="text-center py-8 space-y-6 animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border-2 border-emerald-500/40">
+              <CheckCircle2 className="w-12 h-12" />
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
+                Listing & Escrow Deal Room Initialized
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-display">
+                ₦5,000 Token Fee Verified! Your Japa Asset is Live.
+              </h2>
+              <p className="text-stone-300 text-xs sm:text-sm max-w-lg mx-auto">
+                Payment Ref: <code className="text-amber-400 font-mono font-bold">{paymentRef}</code>. Certified local scouts in {formData.state} State have received instant alert to inspect and verify title deeds.
+              </p>
+            </div>
+
+            <div className="bg-stone-900/80 p-5 rounded-2xl border border-stone-800 max-w-md mx-auto text-left space-y-3 text-xs">
+              <div className="font-bold text-white flex items-center justify-between border-b border-stone-800 pb-2">
+                <span>Summary of Escrow Deal Terms</span>
+                <span className="text-emerald-400">Active Listing</span>
+              </div>
+              <div className="flex justify-between text-stone-300">
+                <span>Liquidation Asking Price:</span>
+                <span className="font-extrabold text-amber-400">₦{Number(formData.priceNGN).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-stone-300">
+                <span>Territory:</span>
+                <span className="font-bold text-white">{formData.state} State ({formData.lga})</span>
+              </div>
+              <div className="flex justify-between text-stone-300">
+                <span>Scout Success Fee (On Escrow Handover):</span>
+                <span className="font-bold text-emerald-400">2.0% (₦{estimatedScoutPayout.toLocaleString()})</span>
+              </div>
+              <div className="flex justify-between text-stone-300">
+                <span>Platform Service Token Fee:</span>
+                <span className="font-bold text-emerald-400">₦5,000.00 (Paid & Verified)</span>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                onClick={onClose}
+                className="btn-gold px-8 py-3 text-sm font-bold shadow-xl"
+              >
+                Go to Marketplace Deals &rarr;
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* ================= 5-STEP WIZARD FORM ================= */
           <div className="space-y-6">
             
-            {/* Header with Step Progress */}
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>SellJapa Confidential Onboarding Wizard</span>
+            {/* Header with Step Tracker */}
+            <div className="space-y-3 border-b border-stone-800 pb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 id="seller-wizard-title" className="text-xl sm:text-2xl font-extrabold text-white font-display">
+                    Confidential Relocation Asset Liquidation
+                  </h2>
+                  <p className="text-xs text-stone-400">
+                    Step {step} of 5 • Certified Valuation & 100% Escrow Protection
+                  </p>
+                </div>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-display">
-                List Your Relocation Asset Privately
-              </h2>
-              <p className="text-xs sm:text-sm text-stone-400 mt-1">
-                Reach over 25,000 local & diaspora buyers with certified on-ground scout network and 100% escrow protection.
-              </p>
 
-              {/* Progress Steps Indicators - 5 Steps */}
-              <div className="grid grid-cols-5 gap-2 mt-4 pt-4 border-t border-stone-800">
+              {/* Progress Bar */}
+              <div className="grid grid-cols-5 gap-1.5 pt-1">
                 {[
                   { num: 1, label: "Timeline" },
-                  { num: 2, label: "Location" },
-                  { num: 3, label: "Photos" },
-                  { num: 4, label: "Pricing" },
-                  { num: 5, label: "₦5,000 Fee" }
-                ].map((s) => (
-                  <div key={s.num} className="flex flex-col gap-1">
-                    <div className={`h-1.5 rounded-full transition-all ${
+                  { num: 2, label: "Asset & State" },
+                  { num: 3, label: "Inventory" },
+                  { num: 4, label: "Pricing & Scout" },
+                  { num: 5, label: "₦5k Token Fee" }
+                ].map(s => (
+                  <div key={s.num} className="space-y-1">
+                    <div className={`h-1.5 rounded-full transition-all duration-300 ${
                       step >= s.num ? 'bg-gradient-to-r from-amber-500 to-emerald-400' : 'bg-stone-800'
                     }`}></div>
-                    <span className={`text-[10px] font-bold truncate ${
+                    <span className={`text-[10px] block font-bold truncate ${
                       step === s.num ? 'text-amber-400' : step > s.num ? 'text-emerald-400' : 'text-stone-500'
                     }`}>
                       {s.num}. {s.label}
@@ -239,186 +317,219 @@ export function SellerWizardModal({ isOpen, onClose, onAddListing }) {
               </div>
             </div>
 
-            {/* STEP 1: Target Closing Timeline */}
+            {/* STEP 1: RELOCATION TIMELINE & TARGET WINDOW */}
             {step === 1 && (
-              <div className="space-y-4 pt-2">
-                <div className="bg-emerald-950/40 p-3.5 rounded-2xl border border-emerald-500/30 text-xs text-emerald-200 flex items-start gap-2.5">
-                  <Lock className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>
-                    <strong>Privacy First:</strong> Your specific travel details, flight numbers, and dates are never shown to buyers or third parties. Buyers only see your preferred closing window (e.g. 14 days) to facilitate prompt transactions.
-                  </span>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="space-y-1">
+                  <label className="text-xs font-extrabold uppercase text-amber-400 tracking-wider">
+                    Where & When Are You Relocating?
+                  </label>
+                  <p className="text-xs text-stone-400">
+                    Setting a realistic closing timeline triggers emergency discount highlights for cash-ready diaspora buyers.
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-stone-300 mb-1">
-                      Relocation Type
-                    </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-300">Target Relocation Destination</label>
                     <select
                       value={formData.destination}
                       onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs font-semibold focus:outline-none"
+                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs font-medium focus:outline-none focus:border-amber-400"
                     >
-                      <option value="International Relocation">International Relocation (Overseas Move)</option>
-                      <option value="Inter-State Relocation">Inter-State Nigerian Relocation</option>
-                      <option value="Corporate / Embassy Transfer">Corporate / Diplomatic Transfer</option>
+                      <option value="United Kingdom (UK)">United Kingdom (UK)</option>
+                      <option value="Canada (Express Entry / Study)">Canada (Express Entry / Study)</option>
+                      <option value="United States (USA)">United States (USA)</option>
+                      <option value="European Union / Ireland">European Union / Ireland</option>
+                      <option value="Australia / New Zealand">Australia / New Zealand</option>
+                      <option value="Other International Relocation">Other Relocation Destination</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-stone-300 mb-1">
-                      Preferred Closing & Handover Window (Days)
-                    </label>
-                    <input
-                      type="number"
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-300">Target Days to Escrow Close</label>
+                    <select
                       value={formData.targetClosingDays}
-                      onChange={(e) => setFormData({ ...formData, targetClosingDays: e.target.value })}
-                      min="3"
-                      max="90"
-                      placeholder="e.g. 14"
-                      className="w-full bg-stone-900 border border-stone-700 text-amber-300 font-bold rounded-xl p-3 text-xs focus:outline-none"
+                      onChange={(e) => setFormData({ ...formData, targetClosingDays: Number(e.target.value) })}
+                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs font-medium focus:outline-none focus:border-amber-400"
+                    >
+                      <option value={7}>🚨 Urgent 7 Days (Highest Discount Appeal)</option>
+                      <option value={10}>⚡ 10 Days Express</option>
+                      <option value={14}>🗓️ 14 Days Standard Japa Window</option>
+                      <option value={21}>🕒 21 Days</option>
+                      <option value={30}>📅 30 Days Flexible</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-300">Seller Alias / Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Dr. A. Adeleke (Relocating Consultant)"
+                      value={formData.sellerName}
+                      onChange={(e) => setFormData({ ...formData, sellerName: e.target.value })}
+                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-300">Profession / Background</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. NHS Senior Registrar / Software Engineer"
+                      value={formData.sellerProfession}
+                      onChange={(e) => setFormData({ ...formData, sellerProfession: e.target.value })}
+                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 </div>
 
-                <div className="bg-stone-900/60 p-4 rounded-2xl border border-stone-800 text-xs space-y-1.5 text-stone-300">
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <span>How SellJapa Protects Your Privacy:</span>
+                <div className="bg-amber-950/40 p-3.5 rounded-2xl border border-amber-500/30 text-xs text-amber-200 flex items-start gap-2.5">
+                  <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong>Strict Confidentiality Guarantee:</strong> Your exact street address and personal identity remain hidden from public search engines. Only verified escrow bidders receive access during physical scout verification.
                   </div>
-                  <p className="text-[11px] text-stone-400 leading-relaxed">
-                    Personal identity and sensitive documents are held strictly under bank trustee custody. Direct contact with prospective buyers is handled through the in-app Deal Room with simulated or live WebRTC video inspection without exposing your personal phone number until escrow is locked.
-                  </p>
                 </div>
               </div>
             )}
 
-            {/* STEP 2: Location & Asset Category */}
+            {/* STEP 2: NIGERIAN STATE & ASSET CATEGORY */}
             {step === 2 && (
-              <div className="space-y-4 pt-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-stone-300 mb-1">
-                      Nigerian State (36 States + FCT)
-                    </label>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="space-y-1">
+                  <label className="text-xs font-extrabold uppercase text-amber-400 tracking-wider">
+                    Select Territory & Asset Type
+                  </label>
+                  <p className="text-xs text-stone-400">
+                    We cover all 36 Nigerian States + FCT Abuja with on-ground certified surveyors.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-300">State Location</label>
                     <select
                       value={formData.state}
                       onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs font-semibold focus:outline-none"
+                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-amber-400"
                     >
-                      {ALL_STATES.filter(s => s !== "All 36 States + FCT").map((st) => (
+                      {ALL_STATES.filter(s => s !== "All 36 States + FCT").map(st => (
                         <option key={st} value={st}>{st} State</option>
                       ))}
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-stone-300 mb-1">
-                      Exact Area / Neighborhood Address
-                    </label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-300">LGA / Neighborhood</label>
                     <input
                       type="text"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      placeholder="e.g. Lekki Phase 1, Off Admiralty, Lagos"
-                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs focus:outline-none"
+                      placeholder="e.g. Eti-Osa / Lekki Phase 1 / Guzape"
+                      value={formData.lga}
+                      onChange={(e) => setFormData({ ...formData, lga: e.target.value, location: `${e.target.value}, ${formData.state}` })}
+                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-stone-300 mb-2">
-                    Select Asset Sale Structure
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, category: 'bundle', type: 'Whole-House Relocation Bundle' })}
-                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                        formData.category === 'bundle'
-                          ? 'bg-amber-950/50 border-amber-500 text-amber-200 shadow-md'
-                          : 'bg-stone-900/60 border-stone-800 text-stone-400 hover:border-stone-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 font-bold text-sm text-white">
-                        <Sparkles className="w-4 h-4 text-amber-400" />
-                        <span>✨ Whole-House Bundle (Recommended)</span>
-                      </div>
-                      <p className="text-[11px] text-stone-400 mt-1">
-                        Sell your house together with car, solar inverter, and furniture in a single fast takeover transaction.
-                      </p>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, category: 'house', type: 'Residential Property' })}
-                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                        formData.category === 'house'
-                          ? 'bg-emerald-950/50 border-emerald-500 text-emerald-200 shadow-md'
-                          : 'bg-stone-900/60 border-stone-800 text-stone-400 hover:border-stone-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 font-bold text-sm text-white">
-                        <span>🏠 Property Only</span>
-                      </div>
-                      <p className="text-[11px] text-stone-400 mt-1">
-                        Duplex, Terrace, Flat, or Land plot without household contents.
-                      </p>
-                    </button>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-stone-300">Select Liquidation Category</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {[
+                      { id: 'bundle', label: 'Whole-House Bundle', desc: 'House + Car + Solar', icon: '✨' },
+                      { id: 'house', label: 'Duplex / House', desc: 'Residential Property', icon: '🏡' },
+                      { id: 'land', label: 'Land & Plots', desc: 'Titled Land', icon: '📐' },
+                      { id: 'furnishing', label: 'Appliances / Car', desc: 'Movable Assets', icon: '🚗' }
+                    ].map(cat => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, category: cat.id, type: cat.label })}
+                        className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                          formData.category === cat.id
+                            ? 'bg-amber-500/20 border-amber-400 text-white shadow-lg'
+                            : 'bg-stone-900 border-stone-800 text-stone-400 hover:border-stone-700'
+                        }`}
+                      >
+                        <div className="text-xl mb-1">{cat.icon}</div>
+                        <div className="text-xs font-bold text-white leading-tight">{cat.label}</div>
+                        <div className="text-[10px] text-stone-400 mt-0.5">{cat.desc}</div>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-stone-300 mb-1">
-                    Listing Headline / Title
-                  </label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-300">Listing Headline / Catchphrase</label>
                   <input
                     type="text"
+                    placeholder="e.g. Urgent Japa Sale: Fully Furnished 4-Bed Duplex + 2021 RAV4 + 5KVA Solar"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="e.g. 4-Bedroom Semi-Detached Duplex + 2022 RX350 + 5KVA Solar"
-                    className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs focus:outline-none"
+                    className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs focus:outline-none focus:border-amber-400 font-medium"
                   />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-300">Land / Property Title Document</label>
+                  <select
+                    value={formData.verifiedTitle}
+                    onChange={(e) => setFormData({ ...formData, verifiedTitle: e.target.value })}
+                    className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs focus:outline-none"
+                  >
+                    <option value="Governor's Consent">Governor's Consent (High Liquidity)</option>
+                    <option value="Certificate of Occupancy (C of O)">Certificate of Occupancy (C of O)</option>
+                    <option value="Registered Gazette & Survey Plan">Registered Gazette & Survey Plan</option>
+                    <option value="Deed of Assignment & Power of Attorney">Deed of Assignment & Power of Attorney</option>
+                    <option value="Federal C of O (FCT Abuja)">Federal C of O (FCT Abuja)</option>
+                  </select>
                 </div>
               </div>
             )}
 
-            {/* STEP 3: Upload Photos, Bundle Items & Docs */}
+            {/* STEP 3: ITEMIZE WHOLE-HOUSE BUNDLE & PHOTOS */}
             {step === 3 && (
-              <div className="space-y-4 pt-2">
-                
-                {/* Image Upload Area */}
-                <div>
-                  <label className="block text-xs font-bold text-stone-300 mb-1.5 flex items-center justify-between">
-                    <span>Upload Property & Asset Photos ({uploadedImages.length} images)</span>
-                    <span className="text-[10px] text-amber-400">JPG, PNG up to 10MB</span>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="space-y-1">
+                  <label className="text-xs font-extrabold uppercase text-amber-400 tracking-wider">
+                    Upload Photos & Itemize Assets
                   </label>
+                  <p className="text-xs text-stone-400">
+                    Buyers love "Take-All" bundles because they get a turnkey house + car + solar setup in one wire transaction.
+                  </p>
+                </div>
 
-                  <div className="p-4 rounded-2xl border-2 border-dashed border-stone-700 bg-stone-900/60 hover:border-amber-500/60 transition-colors text-center cursor-pointer relative">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleImageFileChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div className="flex flex-col items-center justify-center gap-1.5">
-                      {uploadingImage ? (
-                        <RefreshCw className="w-8 h-8 text-amber-400 animate-spin" />
-                      ) : (
-                        <Upload className="w-8 h-8 text-stone-400" />
-                      )}
-                      <div className="text-xs font-bold text-white">
-                        {uploadingImage ? "Processing & Uploading to CDN..." : "Click or drag & drop property photos here"}
+                {/* Photo Upload Box */}
+                <div className="bg-stone-900/80 p-4 rounded-2xl border border-dashed border-stone-700 space-y-3">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                        <ImageIcon className="w-5 h-5" />
                       </div>
-                      <p className="text-[10px] text-stone-400">Upload photos of compound, interior living room, solar setup & vehicle</p>
+                      <div>
+                        <div className="text-xs font-bold text-white">Upload Asset & Interior Photos</div>
+                        <div className="text-[11px] text-stone-400">PNG, JPG or WebP (Up to 10 photos)</div>
+                      </div>
                     </div>
+
+                    <label className="btn-secondary text-xs px-4 py-2 cursor-pointer flex items-center gap-1.5">
+                      <Upload className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{uploadingImage ? "Uploading..." : "Browse Photos"}</span>
+                      <input 
+                        type="file" 
+                        multiple 
+                        accept="image/*" 
+                        onChange={handleImageFileChange} 
+                        className="hidden" 
+                      />
+                    </label>
                   </div>
 
                   {/* Image Previews */}
                   {uploadedImages.length > 0 && (
                     <div className="flex gap-2 overflow-x-auto pt-3 pb-1">
-                      {uploadedImages.map((img, idx) => (\n                        <div key={idx} className="relative w-20 h-16 rounded-xl overflow-hidden border border-stone-700 shrink-0 group">
+                      {uploadedImages.map((img, idx) => (
+                        <div key={idx} className="relative w-20 h-16 rounded-xl overflow-hidden border border-stone-700 shrink-0 group">
                           <img src={img} alt="preview" className="w-full h-full object-cover" />
                           <button
                             type="button"
@@ -440,229 +551,203 @@ export function SellerWizardModal({ isOpen, onClose, onAddListing }) {
                       <span className="text-[10px] text-stone-400">{formData.bundledItems.length} items added</span>
                     </div>
 
-                    <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                      {formData.bundledItems.map((b, idx) => (
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                      {formData.bundledItems.map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-stone-800 text-xs">
-                          <span className="text-stone-200 font-medium">• {b.item}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-amber-400 font-bold">{b.individualValue}</span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveBundleItem(idx)}
-                              className="text-stone-500 hover:text-red-400 p-1 cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                          <div className="truncate pr-2">
+                            <span className="text-stone-200 font-semibold">• {item.item}</span>
+                            <span className="text-stone-400 text-[10px] ml-2">({item.individualValue})</span>
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBundleItem(idx)}
+                            className="text-stone-500 hover:text-red-400 p-1 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       ))}
                     </div>
 
-                    {/* Add new item input */}
-                    <div className="flex gap-2 pt-2 border-t border-stone-800">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-1">
                       <input
                         type="text"
-                        placeholder="e.g. LG 65' OLED TV or 2019 Camry"
+                        placeholder="e.g. 5KVA Felicity Solar Inverter with 4 Lithium Batteries"
                         value={newItemName}
                         onChange={(e) => setNewItemName(e.target.value)}
-                        className="flex-1 bg-black/50 border border-stone-700 text-xs text-stone-100 rounded-lg p-2 focus:outline-none"
+                        className="sm:col-span-7 bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-2.5 text-xs focus:outline-none"
                       />
                       <input
-                        type="number"
-                        placeholder="Estimated Val (₦)"
+                        type="text"
+                        placeholder="Estimated value (e.g. ₦6.5M)"
                         value={newItemValue}
                         onChange={(e) => setNewItemValue(e.target.value)}
-                        className="w-32 bg-black/50 border border-stone-700 text-xs text-stone-100 rounded-lg p-2 focus:outline-none"
+                        className="sm:col-span-3 bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-2.5 text-xs focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={handleAddBundleItem}
-                        className="btn-gold py-1.5 px-3 text-xs cursor-pointer"
+                        className="sm:col-span-2 btn-gold text-xs py-2 justify-center"
                       >
                         <Plus className="w-3.5 h-3.5" />
+                        <span>Add</span>
                       </button>
                     </div>
                   </div>
                 )}
-
-                <div>
-                  <label className="block text-xs font-bold text-stone-300 mb-1">
-                    Title Document Classification
-                  </label>
-                  <select
-                    value={formData.verifiedTitle}
-                    onChange={(e) => setFormData({ ...formData, verifiedTitle: e.target.value })}
-                    className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs font-semibold focus:outline-none"
-                  >
-                    <option value="Certificate of Occupancy (C of O)">Certificate of Occupancy (C of O)</option>
-                    <option value="Governor's Consent">Governor's Consent</option>
-                    <option value="Deed of Assignment & Registered Survey">Deed of Assignment & Registered Survey</option>
-                    <option value="Gazette / Excision">Gazette / Government Excision</option>
-                    <option value="Original Purchase Invoices (For Furnishings/Cars)">Original Purchase Invoices & Receipts</option>
-                  </select>
-                </div>
-
               </div>
             )}
 
-            {/* STEP 4: Pricing & Scout Success Commission Structure */}
+            {/* STEP 4: FAST LIQUIDATION PRICING & SCOUT VERIFICATION */}
             {step === 4 && (
-              <div className="space-y-4 pt-2">
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-stone-300 mb-1">
-                      Normal Open Market Value (₦)
-                    </label>
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="space-y-1">
+                  <label className="text-xs font-extrabold uppercase text-amber-400 tracking-wider">
+                    Pricing & Scout Verification Payout
+                  </label>
+                  <p className="text-xs text-stone-400">
+                    Price below market rate to attract instant cash settlement before your flight departure.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-300">Original / Market Value (₦ NGN)</label>
                     <input
                       type="number"
+                      step="500000"
                       value={formData.originalValueNGN}
                       onChange={(e) => setFormData({ ...formData, originalValueNGN: Number(e.target.value) })}
-                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs focus:outline-none"
+                      className="w-full bg-stone-900 border border-stone-700 text-stone-100 rounded-xl p-3 text-xs font-mono font-bold focus:outline-none"
                     />
+                    <span className="text-[10px] text-stone-400">₦{Number(formData.originalValueNGN).toLocaleString()}</span>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-amber-400 mb-1">
-                      Expedited Relocation Asking Price (₦)
-                    </label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-amber-300">Emergency Liquidation Asking Price (₦ NGN)</label>
                     <input
                       type="number"
+                      step="500000"
                       value={formData.priceNGN}
                       onChange={(e) => setFormData({ ...formData, priceNGN: Number(e.target.value) })}
-                      className="w-full bg-stone-900 border border-amber-500/60 text-amber-300 font-extrabold rounded-xl p-3 text-xs focus:outline-none"
+                      className="w-full bg-stone-900 border-2 border-amber-400 text-amber-400 rounded-xl p-3 text-xs font-mono font-extrabold focus:outline-none shadow-lg"
                     />
+                    <span className="text-[10px] text-amber-400 font-bold">₦{Number(formData.priceNGN).toLocaleString()} ({discountEstimate}% distress discount)</span>
                   </div>
                 </div>
 
-                {/* Scout Success Commission Notice */}
-                <div className="bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/30 space-y-2">
-                  <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                    <Percent className="w-4 h-4 text-emerald-400" />
-                    <span>On-Ground Scout Success Commission Model</span>
+                {/* 2% Scout Commission Breakdown Box */}
+                <div className="bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/40 space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <span className="font-extrabold text-white">Certified Scout Success Commission:</span>
+                    </div>
+                    <span className="font-bold text-emerald-400 text-sm">2.0% on Closing</span>
                   </div>
-                  <p className="text-[11px] text-stone-300 leading-relaxed">
-                    Certified local scouts in {formData.state} State assist with physical buyer walkthroughs and physical inspection. <strong className="text-amber-300">Scouts do not charge upfront fees to inspect</strong> — for any successful deal, the scout earns an agreed <strong>{formData.scoutCommissionPercent}% success commission</strong> deducted from the seller payout only upon final escrow release.
-                  </p>
                   
-                  <div className="pt-2 flex items-center justify-between text-xs bg-black/40 p-2.5 rounded-xl border border-emerald-500/20">
-                    <span className="text-stone-300">Agreed Scout Success Fee Upon Deal Close:</span>
-                    <span className="font-extrabold text-amber-400">
-                      {formData.scoutCommissionPercent}% (₦{((formData.priceNGN * formData.scoutCommissionPercent) / 100).toLocaleString()})
+                  <div className="grid grid-cols-2 gap-2 text-xs bg-black/40 p-3 rounded-xl border border-stone-800">
+                    <div>
+                      <span className="text-stone-400 text-[10px] block">Estimated Scout Payout:</span>
+                      <span className="text-sm font-black text-gradient-gold">₦{estimatedScoutPayout.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-stone-400 text-[10px] block">Payout Timing:</span>
+                      <span className="text-xs font-bold text-stone-200">Direct from Escrow upon Handover</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-stone-300 leading-relaxed">
+                    <strong>Zero upfront fee to the scout:</strong> The certified surveyor in {formData.state} State performs physical title validation, video tour recording, and electrical diagnostics free of charge. Their 2% success fee is paid automatically from the escrow release.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: ₦5,000 PLATFORM SERVICE TOKEN FEE CHECKOUT */}
+            {step === 5 && (
+              <form onSubmit={handleProcessPayment} className="space-y-4 animate-in fade-in duration-200">
+                <div className="space-y-1">
+                  <label className="text-xs font-extrabold uppercase text-amber-400 tracking-wider">
+                    Anti-Spam & Dedicated Deal Room Activation
+                  </label>
+                  <p className="text-xs text-stone-400">
+                    To prevent fraudulent or duplicate listings, relocating sellers pay a nominal <strong>₦5,000 platform service token fee</strong>. This covers cloud 4K video hosting, WhatsApp scout dispatch, and lawyer escrow setup.
+                  </p>
+                </div>
+
+                {/* ₦5,000 Receipt Card */}
+                <div className="bg-gradient-to-r from-amber-950/80 via-[#132019] to-stone-900 p-4 rounded-2xl border-2 border-amber-400 shadow-xl flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <div className="text-[11px] text-amber-300 font-extrabold uppercase tracking-wide">Platform Service & Escrow Token Fee</div>
+                    <div className="text-xs text-stone-300">Listing: {formData.title || formData.type}</div>
+                    <div className="text-[10px] text-stone-400">{formData.state} State Territory • 100% Tax Inclusive</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-black text-amber-400 font-display">₦5,000.00</div>
+                    <span className="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/40 font-semibold">
+                      One-Time Only
                     </span>
                   </div>
                 </div>
 
-              </div>
-            )}
-
-            {/* STEP 5: ₦5,000 Platform Service Token Fee */}
-            {step === 5 && (
-              <div className="space-y-4 pt-2 animate-in fade-in">
-                
-                {/* Fee Breakdown Card */}
-                <div className="glass-panel-gold p-5 rounded-2xl border-amber-500/40 space-y-3 bg-[#111c16]">
-                  <div className="flex items-center justify-between border-b border-amber-500/30 pb-2.5">
-                    <div>
-                      <span className="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider">SellJapa Platform Fee</span>
-                      <h3 className="text-base font-extrabold text-white">Platform Listing & Marketing Service Token Fee</h3>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-black text-amber-300 font-display">₦5,000</div>
-                      <span className="text-[10px] text-emerald-400 font-bold">One-Time Token</span>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-stone-300 space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span><strong>Services Rendered by Platform:</strong> Nationwide hosting, AI liquidation valuation, and priority exposure to 25,000+ local & diaspora cash buyers.</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span>Dedicated Encrypted Deal Room & Escrow Management infrastructure.</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span>4K virtual inspection video streaming and buyer matchmaking desk.</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-stone-400 text-[11px] pt-1 border-t border-stone-800">
-                      <Percent className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span><em>Scout compensation: Local field scouts receive their {formData.scoutCommissionPercent}% commission directly from final closed escrow proceeds.</em></span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Payment Method Selector */}
-                <div>
-                  <label className="block text-xs font-bold text-stone-300 mb-2">Select Payment Method for ₦5,000 Platform Service Fee:</label>
+                {/* Payment Methods */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-stone-300">Select Instant Payment Gateway</label>
                   <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('card')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 cursor-pointer transition-all ${
-                        paymentMethod === 'card' ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow' : 'bg-stone-900 border-stone-800 text-stone-400'
-                      }`}
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      <span>Debit / Verve / Visa</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('transfer')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 cursor-pointer transition-all ${
-                        paymentMethod === 'transfer' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow' : 'bg-stone-900 border-stone-800 text-stone-400'
-                      }`}
-                    >
-                      <Landmark className="w-4 h-4" />
-                      <span>Bank Transfer / NIP</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('ussd')}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 cursor-pointer transition-all ${
-                        paymentMethod === 'ussd' ? 'bg-blue-500/20 border-blue-500 text-blue-300 shadow' : 'bg-stone-900 border-stone-800 text-stone-400'
-                      }`}
-                    >
-                      <Smartphone className="w-4 h-4" />
-                      <span>USSD / OPay / PalmPay</span>
-                    </button>
+                    {[
+                      { id: 'card', label: 'Debit Card', desc: 'Mastercard / Visa / Verve', icon: <CreditCard className="w-4 h-4" /> },
+                      { id: 'transfer', label: 'Bank Transfer', desc: 'Dedicated Providus NUBAN', icon: <Landmark className="w-4 h-4" /> },
+                      { id: 'ussd', label: 'USSD / OPay', desc: '*737# / *919# / OPay', icon: <Smartphone className="w-4 h-4" /> }
+                    ].map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(p.id)}
+                        className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                          paymentMethod === p.id 
+                            ? 'bg-amber-500/20 border-amber-400 text-white shadow-lg' 
+                            : 'bg-stone-900 border-stone-800 text-stone-400 hover:border-stone-700'
+                        }`}
+                      >
+                        <div className="text-amber-400 mb-1">{p.icon}</div>
+                        <div className="text-xs font-bold text-white">{p.label}</div>
+                        <div className="text-[10px] text-stone-400 truncate">{p.desc}</div>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Payment Forms */}
+                {/* Card Fields Simulator */}
                 {paymentMethod === 'card' && (
                   <div className="bg-stone-900/80 p-4 rounded-2xl border border-stone-800 space-y-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-stone-400 mb-1">Card Number</label>
-                      <div className="flex items-center gap-2 bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-xs">
-                        <CreditCard className="w-4 h-4 text-amber-400" />
-                        <input
-                          type="text"
-                          value={cardNumber}
-                          onChange={(e) => setCardNumber(e.target.value)}
-                          className="bg-transparent border-none text-white font-mono focus:outline-none w-full"
-                        />
-                      </div>
+                      <label className="block text-[11px] font-bold text-stone-300 mb-1">Card Number</label>
+                      <input
+                        type="text"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        className="w-full bg-stone-950 border border-stone-700 text-stone-100 font-mono font-bold rounded-xl p-2.5 text-xs focus:outline-none focus:border-amber-400"
+                      />
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-bold text-stone-400 mb-1">Expiry Date</label>
+                        <label className="block text-[11px] font-bold text-stone-300 mb-1">Expiry (MM/YY)</label>
                         <input
                           type="text"
                           value={cardExpiry}
                           onChange={(e) => setCardExpiry(e.target.value)}
-                          className="w-full bg-stone-950 border border-stone-700 text-white text-xs rounded-xl px-3 py-2 font-mono focus:outline-none"
+                          className="w-full bg-stone-950 border border-stone-700 text-stone-100 font-mono font-bold rounded-xl p-2.5 text-xs focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-bold text-stone-400 mb-1">CVV</label>
+                        <label className="block text-[11px] font-bold text-stone-300 mb-1">CVV (3 Digits)</label>
                         <input
                           type="password"
                           maxLength="3"
                           value={cardCvv}
                           onChange={(e) => setCardCvv(e.target.value)}
-                          className="w-full bg-stone-950 border border-stone-700 text-white text-xs rounded-xl px-3 py-2 font-mono focus:outline-none"
+                          className="w-full bg-stone-950 border border-stone-700 text-stone-100 font-mono font-bold rounded-xl p-2.5 text-xs focus:outline-none"
                         />
                       </div>
                     </div>
@@ -671,126 +756,78 @@ export function SellerWizardModal({ isOpen, onClose, onAddListing }) {
 
                 {paymentMethod === 'transfer' && (
                   <div className="bg-stone-900/80 p-4 rounded-2xl border border-stone-800 space-y-2 text-xs">
-                    <div className="text-[11px] text-stone-400">Transfer exactly ₦5,000 to this dedicated dynamic account:</div>
-                    <div className="bg-black/50 p-3 rounded-xl border border-stone-800 space-y-1">
-                      <div className="flex justify-between"><span className="text-stone-400">Bank:</span> <strong className="text-white">Providus Bank / Wema</strong></div>
-                      <div className="flex justify-between"><span className="text-stone-400">Account Number:</span> <strong className="text-amber-400 text-sm font-mono">9920194821</strong></div>
-                      <div className="flex justify-between"><span className="text-stone-400">Account Name:</span> <strong className="text-emerald-400">SellJapa Platform Services</strong></div>
+                    <div className="text-stone-400">Transfer ₦5,000 to Dedicated Checkout Account:</div>
+                    <div className="bg-black/50 p-3 rounded-xl border border-amber-500/30 flex items-center justify-between">
+                      <div>
+                        <div className="text-[10px] text-stone-400">Bank: Providus Bank / Paystack Titan</div>
+                        <div className="text-sm font-mono font-black text-amber-400">9928 1049 20</div>
+                        <div className="text-[10px] text-stone-300">Account: SellJapa Liquidation Escrow</div>
+                      </div>
+                      <span className="text-[10px] bg-amber-500 text-stone-950 px-2 py-1 rounded font-bold">Auto-Confirm</span>
                     </div>
-                    <div className="text-[10px] text-stone-500 text-center">Payment automatically confirmed in ~5 seconds</div>
                   </div>
                 )}
 
                 {paymentMethod === 'ussd' && (
-                  <div className="bg-stone-900/80 p-4 rounded-2xl border border-stone-800 text-center space-y-2 text-xs">
-                    <div className="text-stone-300 font-bold">Dial GTBank / Zenith / UBA USSD:</div>
-                    <div className="text-lg font-mono font-black text-amber-400 bg-black/60 py-2 rounded-xl border border-stone-800">
-                      *737*50*5000*8921#
+                  <div className="bg-stone-900/80 p-4 rounded-2xl border border-stone-800 space-y-2 text-xs">
+                    <div className="text-stone-400">Dial the code on your registered SIM:</div>
+                    <div className="bg-black/50 p-3 rounded-xl border border-amber-500/30 text-center font-mono font-black text-amber-400 text-base">
+                      *737*50*5000*9928#
                     </div>
-                    <p className="text-[10px] text-stone-400">Follow prompts on your mobile phone to complete payment</p>
                   </div>
                 )}
 
-              </div>
+                {/* Submit Payment CTA */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isProcessingPayment}
+                    className="w-full btn-gold py-3.5 text-sm sm:text-base font-extrabold shadow-2xl justify-center cursor-pointer flex items-center gap-2"
+                  >
+                    {isProcessingPayment ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin text-stone-950" />
+                        <span>Verifying ₦5,000 Payment with Bank Gateway...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4 text-stone-950" />
+                        <span>Pay ₦5,000 & Publish Relocation Listing</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </form>
             )}
 
-            {/* Navigation & Submit Buttons */}
-            <div className="flex items-center justify-between pt-4 border-t border-stone-800">
-              {step > 1 ? (
-                <button
-                  type="button"
-                  onClick={() => setStep(step - 1)}
-                  className="btn-secondary text-xs px-4 py-2 flex items-center gap-1 cursor-pointer"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Back</span>
-                </button>
-              ) : (
-                <div></div>
-              )}
+            {/* Navigation Footers */}
+            {step < 5 && (
+              <div className="flex items-center justify-between pt-4 border-t border-stone-800">
+                {step > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setStep(step - 1)}
+                    className="btn-secondary text-xs px-4 py-2.5 flex items-center gap-1 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back</span>
+                  </button>
+                ) : (
+                  <div></div>
+                )}
 
-              {step < 5 ? (
                 <button
                   type="button"
                   onClick={() => setStep(step + 1)}
-                  className="btn-gold text-xs px-6 py-2.5 flex items-center gap-1.5 cursor-pointer font-bold"
+                  className="btn-gold text-xs px-6 py-2.5 font-extrabold flex items-center gap-1 cursor-pointer shadow-lg"
                 >
-                  <span>{step === 4 ? "Proceed to ₦5,000 Platform Service Fee" : "Next Step"}</span>
+                  <span>Continue to Step {step + 1}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={isProcessingPayment}
-                  onClick={handleProcessTokenPayment}
-                  className="btn-emerald text-xs sm:text-sm px-7 py-3 font-extrabold shadow-xl cursor-pointer flex items-center gap-2"
-                >
-                  {isProcessingPayment ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Processing ₦5,000 Platform Fee...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-4 h-4" />
-                      <span>Pay ₦5,000 & Complete Verified Upload</span>
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
+              </div>
+            )}
 
-          </div>
-        ) : (
-          /* Submission Success State with Receipt */
-          <div className="text-center py-6 space-y-4 animate-in fade-in">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/40">
-              <CheckCheck className="w-10 h-10" />
-            </div>
-            
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-display">
-              ₦5,000 Platform Fee Paid & Listing Published!
-            </h2>
-
-            <p className="text-stone-300 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
-              Your relocation asset in <strong className="text-amber-400">{formData.state} State</strong> has been published to over 25,000 buyers. Local field scouts are notified and earn their <strong className="text-emerald-400">{formData.scoutCommissionPercent}% success commission</strong> only when your deal successfully closes.
-            </p>
-
-            {/* Official Payment Receipt Card */}
-            <div className="bg-stone-900/90 p-4 rounded-2xl border border-stone-800 text-left max-w-md mx-auto text-xs space-y-2">
-              <div className="flex items-center justify-between border-b border-stone-800 pb-2">
-                <span className="font-bold text-white flex items-center gap-1.5">
-                  <Receipt className="w-4 h-4 text-emerald-400" />
-                  <span>SellJapa Platform Service Receipt</span>
-                </span>
-                <span className="text-[10px] text-emerald-400 font-extrabold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
-                  PAID SUCCESSFUL
-                </span>
-              </div>
-              <div className="flex justify-between text-stone-400">
-                <span>Transaction Ref:</span>
-                <strong className="text-amber-400 font-mono">{paymentRef}</strong>
-              </div>
-              <div className="flex justify-between text-stone-400">
-                <span>Service Fee Paid:</span>
-                <strong className="text-white">₦5,000.00 (Platform Services)</strong>
-              </div>
-              <div className="flex justify-between text-stone-400">
-                <span>Scout Commission Model:</span>
-                <strong className="text-emerald-400">{formData.scoutCommissionPercent}% on Success (Paid from Escrow Close)</strong>
-              </div>
-              <div className="flex justify-between text-stone-400">
-                <span>Listing State:</span>
-                <strong className="text-stone-200">{formData.state} State</strong>
-              </div>
-            </div>
-
-            <button
-              onClick={onClose}
-              className="btn-gold px-8 py-3 text-xs sm:text-sm font-bold cursor-pointer"
-            >
-              View in Live Marketplace &rarr;
-            </button>
           </div>
         )}
 
