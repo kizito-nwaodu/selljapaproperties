@@ -312,8 +312,22 @@ export function Navbar({
           {/* Mobile menu button */}
           <div className="flex lg:hidden items-center gap-2">
             <button
+              type="button"
+              onClick={onOpenChat}
+              aria-label="Open encrypted deal rooms"
+              className="p-2.5 min-w-[44px] min-h-[44px] rounded-xl bg-stone-900 text-stone-300 border border-stone-800 flex items-center justify-center relative cursor-pointer"
+            >
+              <MessageSquare className="w-5 h-5 text-amber-400" />
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping"></span>
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-amber-400 rounded-full"></span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-xl bg-stone-900 text-stone-300 border border-stone-800"
+              aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={isMobileMenuOpen}
+              className="p-2.5 min-w-[44px] min-h-[44px] rounded-xl bg-stone-900 text-stone-300 border border-stone-800 flex items-center justify-center cursor-pointer"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -324,69 +338,143 @@ export function Navbar({
 
       {/* Mobile Dropdown Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-[#0a120e] border-b border-stone-800 p-4 space-y-3 animate-in fade-in">
+        <div 
+          role="region" 
+          aria-label="Mobile Navigation Menu"
+          className="lg:hidden bg-[#0a120e] border-b border-stone-800 p-4 space-y-3.5 animate-in fade-in max-h-[85vh] overflow-y-auto"
+        >
           
+          {/* Mobile Quick State & Currency Bar */}
+          <div className="grid grid-cols-2 gap-2 pb-2 border-b border-stone-800">
+            <div>
+              <label htmlFor="mobile-currency-select" className="block text-[10px] font-bold text-stone-400 mb-1">Currency:</label>
+              <select
+                id="mobile-currency-select"
+                aria-label="Select Currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full bg-stone-900 border border-stone-700 text-amber-400 text-xs font-bold rounded-xl px-2.5 py-2 min-h-[44px] focus:outline-none"
+              >
+                {Object.keys(EXCHANGE_RATES).map((curr) => (
+                  <option key={curr} value={curr}>
+                    {EXCHANGE_RATES[curr].symbol} {curr}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="mobile-state-select" className="block text-[10px] font-bold text-stone-400 mb-1">State Filter:</label>
+              <select
+                id="mobile-state-select"
+                aria-label="Filter by Nigerian State"
+                value={selectedState}
+                onChange={(e) => setSelectedState(e.target.value)}
+                className="w-full bg-stone-900 border border-emerald-800/80 text-emerald-300 text-xs font-semibold rounded-xl px-2 py-2 min-h-[44px] focus:outline-none truncate"
+              >
+                {ALL_STATES.map((st) => (
+                  <option key={st} value={st}>
+                    📍 {st}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-2 text-xs">
             <button
               onClick={() => { setActiveTab('explore'); setIsMobileMenuOpen(false); }}
-              className="p-2 rounded-xl bg-stone-900 text-white font-bold text-center border border-stone-800"
+              className={`p-3 min-h-[44px] rounded-xl font-bold text-center border transition-all flex items-center justify-center ${
+                activeTab === 'explore' 
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50' 
+                  : 'bg-stone-900 text-white border-stone-800'
+              }`}
             >
               Browse Deals
             </button>
             <button
               onClick={() => { setActiveTab('bundles'); setIsMobileMenuOpen(false); }}
-              className="p-2 rounded-xl bg-amber-950/40 text-amber-300 font-bold text-center border border-amber-500/30"
+              className={`p-3 min-h-[44px] rounded-xl font-bold text-center border transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'bundles'
+                  ? 'bg-amber-950 text-amber-300 border-amber-500/60'
+                  : 'bg-amber-950/40 text-amber-300 border-amber-500/30'
+              }`}
             >
-              Whole-House Bundles
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Whole Bundles</span>
             </button>
             <button
               onClick={() => { setActiveTab('calculator'); setIsMobileMenuOpen(false); }}
-              className="p-2 rounded-xl bg-stone-900 text-stone-300 font-bold text-center border border-stone-800"
+              className={`p-3 min-h-[44px] rounded-xl font-bold text-center border transition-all flex items-center justify-center ${
+                activeTab === 'calculator'
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50'
+                  : 'bg-stone-900 text-stone-300 border-stone-800'
+              }`}
             >
               Fast Valuation
             </button>
             <button
               onClick={() => { setActiveTab('escrow'); setIsMobileMenuOpen(false); }}
-              className="p-2 rounded-xl bg-stone-900 text-emerald-300 font-bold text-center border border-stone-800"
+              className={`p-3 min-h-[44px] rounded-xl font-bold text-center border transition-all flex items-center justify-center gap-1 ${
+                activeTab === 'escrow'
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50'
+                  : 'bg-stone-900 text-emerald-300 border-stone-800'
+              }`}
             >
-              Escrow & Safety
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Escrow & Safety</span>
             </button>
           </div>
 
-          <div className="pt-2 flex flex-col gap-2">
+          <div className="pt-2 flex flex-col gap-2.5">
             {!currentUser ? (
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => { onOpenAuth('login'); setIsMobileMenuOpen(false); }}
-                  className="w-full btn-secondary justify-center py-2.5 text-xs font-bold flex items-center gap-1.5"
+                  className="w-full btn-secondary justify-center py-3 min-h-[44px] text-xs font-bold flex items-center gap-1.5"
                 >
                   <LogIn className="w-4 h-4 text-amber-400" />
                   <span>Log In</span>
                 </button>
                 <button
                   onClick={() => { onOpenAuth('signup'); setIsMobileMenuOpen(false); }}
-                  className="w-full btn-emerald justify-center py-2.5 text-xs font-bold flex items-center gap-1.5"
+                  className="w-full btn-emerald justify-center py-3 min-h-[44px] text-xs font-bold flex items-center gap-1.5"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>Sign Up Free</span>
                 </button>
               </div>
             ) : (
-              <div className="p-3 bg-stone-900 rounded-xl flex items-center justify-between text-xs">
-                <span className="text-white font-bold">{currentUser.name} ({currentUser.role === 'relocator_seller' ? 'Seller' : 'Buyer'})</span>
-                <div className="flex gap-2">
-                  <button onClick={() => { onOpenDashboard(); setIsMobileMenuOpen(false); }} className="text-amber-400 font-bold">Dashboard</button>
-                  <button onClick={onLogout} className="text-red-400 font-bold">Sign Out</button>
+              <div className="p-3 bg-stone-900 border border-stone-800 rounded-xl flex items-center justify-between text-xs">
+                <div className="truncate mr-2">
+                  <div className="text-white font-bold truncate">{currentUser.name}</div>
+                  <div className="text-[10px] text-amber-400 uppercase font-extrabold">
+                    {currentUser.role === 'relocator_seller' ? '🏡 Seller Portal' : '💼 Buyer Portal'}
+                  </div>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button 
+                    onClick={() => { onOpenDashboard(); setIsMobileMenuOpen(false); }} 
+                    className="px-2.5 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg font-bold"
+                  >
+                    Dashboard
+                  </button>
+                  <button 
+                    onClick={onLogout} 
+                    className="px-2.5 py-1.5 bg-red-950/40 text-red-400 border border-red-800/40 rounded-lg font-bold"
+                  >
+                    Sign Out
+                  </button>
                 </div>
               </div>
             )}
 
             <button
               onClick={() => { onOpenSellerWizard(); setIsMobileMenuOpen(false); }}
-              className="w-full btn-gold justify-center py-3 text-xs font-bold"
+              className="w-full btn-gold justify-center py-3.5 min-h-[44px] text-xs sm:text-sm font-bold shadow-lg"
             >
               <Sparkles className="w-4 h-4 text-stone-950" />
-              <span>List Relocation Asset / Whole-House Bundle</span>
+              <span>List Relocation Asset / Whole Bundle</span>
             </button>
           </div>
 
