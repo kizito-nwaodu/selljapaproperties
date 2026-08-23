@@ -86,15 +86,21 @@ export function UrgentDealsSection({
       <div className="glass-panel p-4 rounded-2xl mb-8 space-y-4 border-stone-800 bg-[#0f1714]">
         
         {/* Category & Urgency Buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div 
+            role="toolbar" 
+            aria-label="Filter listings by asset type"
+            className="flex flex-wrap items-center gap-1.5"
+          >
             <span className="text-xs font-semibold text-stone-400 mr-1 flex items-center gap-1">
               <Filter className="w-3.5 h-3.5 text-stone-400" /> Type:
             </span>
             <button
+              type="button"
+              aria-pressed={selectedCategory === 'all'}
               onClick={() => setSelectedCategory('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3 py-2 min-h-[40px] rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 selectedCategory === 'all'
                   ? 'bg-emerald-600 text-white shadow'
                   : 'bg-stone-900 text-stone-300 hover:bg-stone-800'
@@ -103,19 +109,23 @@ export function UrgentDealsSection({
               All Assets ({listings.length})
             </button>
             <button
+              type="button"
+              aria-pressed={selectedCategory === 'bundle'}
               onClick={() => setSelectedCategory('bundle')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 ${
+              className={`px-3 py-2 min-h-[40px] rounded-xl text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
                 selectedCategory === 'bundle'
                   ? 'bg-amber-500 text-stone-950 font-bold shadow'
                   : 'bg-stone-900 text-amber-300 hover:bg-stone-800 border border-amber-500/20'
               }`}
             >
-              <Sparkles className="w-3 h-3" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               Whole-House Bundles
             </button>
             <button
+              type="button"
+              aria-pressed={selectedCategory === 'house'}
               onClick={() => setSelectedCategory('house')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3 py-2 min-h-[40px] rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 selectedCategory === 'house'
                   ? 'bg-emerald-600 text-white shadow'
                   : 'bg-stone-900 text-stone-300 hover:bg-stone-800'
@@ -124,8 +134,10 @@ export function UrgentDealsSection({
               Duplexes & Houses
             </button>
             <button
+              type="button"
+              aria-pressed={selectedCategory === 'land'}
               onClick={() => setSelectedCategory('land')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3 py-2 min-h-[40px] rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 selectedCategory === 'land'
                   ? 'bg-emerald-600 text-white shadow'
                   : 'bg-stone-900 text-stone-300 hover:bg-stone-800'
@@ -134,8 +146,10 @@ export function UrgentDealsSection({
               Lands & Plots
             </button>
             <button
+              type="button"
+              aria-pressed={selectedCategory === 'furnishing'}
               onClick={() => setSelectedCategory('furnishing')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3 py-2 min-h-[40px] rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 selectedCategory === 'furnishing'
                   ? 'bg-emerald-600 text-white shadow'
                   : 'bg-stone-900 text-stone-300 hover:bg-stone-800'
@@ -146,13 +160,14 @@ export function UrgentDealsSection({
           </div>
 
           {/* Sort & Urgency Filter Dropdowns */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
             
             {/* Urgency Filter */}
             <select
+              aria-label="Filter by Handover Timeline"
               value={urgencyFilter}
               onChange={(e) => setUrgencyFilter(e.target.value)}
-              className="bg-stone-900 border border-stone-700 text-stone-200 text-xs font-semibold rounded-xl px-2.5 py-1.5 focus:outline-none cursor-pointer"
+              className="bg-stone-900 border border-stone-700 text-stone-200 text-xs font-semibold rounded-xl px-2.5 py-2 min-h-[40px] focus:outline-none cursor-pointer"
             >
               <option value="all">⚡ All Handover Windows</option>
               <option value="critical">🚨 Expedited: Close in &lt; 10 Days</option>
@@ -161,9 +176,10 @@ export function UrgentDealsSection({
 
             {/* Sort Filter */}
             <select
+              aria-label="Sort Deals"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-stone-900 border border-stone-700 text-stone-200 text-xs font-semibold rounded-xl px-2.5 py-1.5 focus:outline-none cursor-pointer"
+              className="bg-stone-900 border border-stone-700 text-stone-200 text-xs font-semibold rounded-xl px-2.5 py-2 min-h-[40px] focus:outline-none cursor-pointer"
             >
               <option value="countdown">⏳ Sort: Fastest Handover Window</option>
               <option value="discount">🔥 Sort: Highest Relocation Discount (%)</option>
