@@ -14,6 +14,7 @@ export function HeroSection({
   setUserPersona,
   onExploreClick,
   onOpenCalculator,
+  onOpenScoutHub,
   onOpenAuth,
   currentUser
 }) {
@@ -73,8 +74,7 @@ export function HeroSection({
         </div>
 
         {/* Dynamic Persona Hero Content */}
-        {userPersona === 'seller' ? (
-          /* ================= SELLER VIEW ================= */
+        {userPersona === 'seller' ? (\n          /* ================= SELLER VIEW ================= */
           <div className="text-center max-w-4xl mx-auto space-y-4 animate-in fade-in duration-300">
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display text-white leading-tight">
               Relocating Abroad? Liquidate Your Nigerian Properties <br className="hidden sm:inline" />
@@ -114,11 +114,17 @@ export function HeroSection({
                 </div>
               </div>
 
-              <div className="bg-stone-900/70 p-3.5 rounded-2xl border border-stone-800 flex items-start gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold shrink-0">2</div>
+              <div 
+                onClick={() => onOpenScoutHub && onOpenScoutHub()}
+                className="bg-stone-900/70 p-3.5 rounded-2xl border border-emerald-500/30 hover:border-emerald-500/60 flex items-start gap-2.5 cursor-pointer transition-all hover:bg-emerald-950/20 group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold shrink-0 group-hover:scale-110 transition-transform">2</div>
                 <div>
-                  <div className="text-xs font-bold text-white">Verified Scout Inspection</div>
-                  <div className="text-[11px] text-stone-400">Physical surveyor check within 24h.</div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>Verified Scout Inspection</span>
+                    <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-mono">2% Earn</span>
+                  </div>
+                  <div className="text-[11px] text-stone-400">Physical surveyor check within 24h. <span className="text-emerald-400 group-hover:underline">Explore Scout Hub &rarr;</span></div>
                 </div>
               </div>
 
@@ -154,8 +160,7 @@ export function HeroSection({
                 <span>Explore Verified Relocation Listings</span>
               </button>
               
-              {!currentUser && (
-                <button
+              {!currentUser && (\n                <button
                   onClick={onOpenAuth}
                   className="btn-secondary px-6 py-3.5 text-sm sm:text-base border border-amber-500/40 text-amber-300 hover:bg-amber-950/40"
                 >

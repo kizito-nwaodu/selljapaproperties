@@ -59,6 +59,7 @@ export function Footer({ onSelectState, onOpenSellerWizard, setActiveTab }) {
             <ul className="space-y-1.5 text-stone-400 text-xs">
               <li><button onClick={() => setActiveTab('explore')} className="hover:text-amber-400">Verified Relocation Deals</button></li>
               <li><button onClick={() => setActiveTab('bundles')} className="hover:text-amber-400">Whole-House Bundles (House + Car + Solar)</button></li>
+              <li><button onClick={() => setActiveTab('scouts')} className="hover:text-amber-400 text-amber-300 font-semibold flex items-center gap-1"><span>⚡ Certified Scout Network (2% Commission)</span></button></li>
               <li><button onClick={() => setActiveTab('calculator')} className="hover:text-amber-400">Fast Liquidation Valuation Calculator</button></li>
               <li><button onClick={() => setActiveTab('diaspora')} className="hover:text-amber-400">Diaspora Buyers Lounge (UK, US, Canada)</button></li>
               <li><button onClick={() => setActiveTab('escrow')} className="hover:text-amber-400">Escrow Security & Deed Registry Search</button></li>
