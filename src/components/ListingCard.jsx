@@ -168,8 +168,10 @@ export function ListingCard({ listing, currency, onSelectListing }) {
           </div>
 
           <button 
+            type="button"
+            aria-label={`View deal room for ${listing.title}`}
             onClick={(e) => { e.stopPropagation(); onSelectListing(listing); }}
-            className="btn-gold py-1.5 px-3 text-xs flex items-center gap-1"
+            className="btn-gold py-2 px-3.5 min-h-[40px] text-xs flex items-center gap-1 cursor-pointer"
           >
             <span>View Deal Room</span>
             <ChevronRight className="w-3.5 h-3.5" />
