@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { UrgentDealsSection } from './components/UrgentDealsSection';
-import { BundlesHub } from './components/BundlesHub';
-import { FastValuationCalculator } from './components/FastValuationCalculator';
-import { GeoExplorer } from './components/GeoExplorer';
-import { EscrowSafetyHub } from './components/EscrowSafetyHub';
-import { DiasporaHub } from './components/DiasporaHub';
-import { ScoutNetworkHub } from './components/ScoutNetworkHub';
-import { TestimonialsSection } from './components/TestimonialsSection';
 import { Footer } from './components/Footer';
 
-// Modals
-import { PropertyDetailModal } from './components/PropertyDetailModal';
-import { SellerWizardModal } from './components/SellerWizardModal';
-import { AuthModal } from './components/AuthModal';
-import { ChatModal } from './components/ChatModal';
-import { CallModal } from './components/CallModal';
-import { ApiConsoleModal } from './components/ApiConsoleModal';
-import { AccountDashboardModal } from './components/AccountDashboardModal';
+// Lazy loaded sub-hubs
+const BundlesHub = lazy(() => import('./components/BundlesHub').then(m => ({ default: m.BundlesHub })));
+const FastValuationCalculator = lazy(() => import('./components/FastValuationCalculator').then(m => ({ default: m.FastValuationCalculator })));
+const GeoExplorer = lazy(() => import('./components/GeoExplorer').then(m => ({ default: m.GeoExplorer })));
+const EscrowSafetyHub = lazy(() => import('./components/EscrowSafetyHub').then(m => ({ default: m.EscrowSafetyHub })));
+const DiasporaHub = lazy(() => import('./components/DiasporaHub').then(m => ({ default: m.DiasporaHub })));
+const ScoutNetworkHub = lazy(() => import('./components/ScoutNetworkHub').then(m => ({ default: m.ScoutNetworkHub })));
+const TestimonialsSection = lazy(() => import('./components/TestimonialsSection').then(m => ({ default: m.TestimonialsSection })));
+
+// Lazy loaded Modals
+const PropertyDetailModal = lazy(() => import('./components/PropertyDetailModal').then(m => ({ default: m.PropertyDetailModal })));
+const SellerWizardModal = lazy(() => import('./components/SellerWizardModal').then(m => ({ default: m.SellerWizardModal })));
+const AuthModal = lazy(() => import('./components/AuthModal').then(m => ({ default: m.AuthModal })));
+const ChatModal = lazy(() => import('./components/ChatModal').then(m => ({ default: m.ChatModal })));
+const CallModal = lazy(() => import('./components/CallModal').then(m => ({ default: m.CallModal })));
+const ApiConsoleModal = lazy(() => import('./components/ApiConsoleModal').then(m => ({ default: m.ApiConsoleModal })));
+const AccountDashboardModal = lazy(() => import('./components/AccountDashboardModal').then(m => ({ default: m.AccountDashboardModal })));
 
 // Mock Data & Services
 import { JAPA_LISTINGS } from './data/mockData';
@@ -43,92 +45,95 @@ export function App() {
 
   // Active User Auth State
   const [currentUser, setCurrentUser] = useState(() => authApi.getCurrentUser());
-
-  // Modal State Controls
+  
+  // Modals state
   const [selectedListing, setSelectedListing] = useState(null);
   const [isSellerWizardOpen, setIsSellerWizardOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalMode, setAuthModalMode] = useState('login'); // 'login' or 'signup'
+  const [authModalMode, setAuthModalMode] = useState('login'); // login, register, scout
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
-  const [isApiConsoleOpen, setIsApiConsoleOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isApiConsoleOpen, setIsApiConsoleOpen] = useState(false);
+  const [activeCallSession, setActiveCallSession] = useState(null); // { partnerName, callType }
 
+  // Sync listings with local storage
+  useEffect(() => {
+    try {
+      localStorage.setItem('selljapa_listings', JSON.stringify(listings));
+    } catch (e) {
+      console.warn('Could not save listings to localStorage', e);
+    }
+  }, [listings]);
+
+  // Handler to add a new confidential listing
+  const handleAddListing = (newListing) => {
+    setListings((prev) => [newListing, ...prev]);
+    setIsSellerWizardOpen(false);
+  };
+
+  // Auth Modal openers
   const handleOpenAuth = (mode = 'login') => {
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
   };
 
-  // Active Call State
-  const [activeCallSession, setActiveCallSession] = useState(null);
+  const handleLogout = () => {
+    authApi.logout();
+    setCurrentUser(null);
+    setIsDashboardOpen(false);
+  };
 
-  // Sync listings to local storage
-  useEffect(() => {
-    try {
-      localStorage.setItem('selljapa_listings', JSON.stringify(listings));
-    } catch (err) {
-      console.error(err);
+  const handleUpdateUserRole = (newRole) => {
+    const updated = authApi.updateRole(newRole);
+    if (updated) {
+      setCurrentUser({ ...updated });
+      setUserPersona(newRole === 'relocator_seller' ? 'seller' : 'buyer');
     }
-  }, [listings]);
+  };
 
-  const handleAddListing = (newListing) => {
-    setListings(prev => [newListing, ...prev]);
+  const handleStartChat = (listing) => {
+    setSelectedListing(listing);
+    setIsChatModalOpen(true);
+  };
+
+  const handleStartCall = (partnerName, callType = 'video') => {
+    setActiveCallSession({ partnerName, callType });
   };
 
   const handleMarkListingSold = (listingId) => {
     setListings(prev => prev.map(item => {
       if (item.id === listingId) {
-        return { ...item, isSold: true, status: 'SOLD VIA ESCROW' };
+        return {
+          ...item,
+          status: 'Sold',
+          badges: ['Escrow Released', 'Deal Completed']
+        };
       }
       return item;
     }));
   };
 
-  const handleStartChat = (listing) => {
-    setSelectedListing(null);
-    setIsChatModalOpen(true);
-  };
-
-  const handleStartCall = (partnerName, callType = "video") => {
-    setActiveCallSession({
-      partnerName: partnerName || "Relocation Seller",
-      callType: callType || "video"
-    });
-  };
-
-  const handleUpdateUserRole = (newRole) => {
-    if (!currentUser) return;
-    const updated = { ...currentUser, role: newRole };
-    setCurrentUser(updated);
-    localStorage.setItem('selljapa_current_user', JSON.stringify(updated));
-  };
-
-  const handleLogout = async () => {
-    await authApi.logout();
-    setCurrentUser(null);
-  };
-
   return (
-    <div className="min-h-screen bg-[#050a08] text-stone-100 flex flex-col font-sans selection:bg-amber-500 selection:text-stone-950">
+    <div className="min-h-screen bg-[#060a08] text-stone-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-black">
       
-      {/* Top Navbar */}
-      <Navbar
-        selectedState={selectedState}
-        setSelectedState={setSelectedState}
+      {/* Top Universal Navigation Bar */}
+      <Navbar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab}
         currency={currency}
         setCurrency={setCurrency}
         currentUser={currentUser}
         onOpenAuth={handleOpenAuth}
-        onLogout={handleLogout}
+        onOpenDashboard={() => setIsDashboardOpen(true)}
         onOpenSellerWizard={() => setIsSellerWizardOpen(true)}
         onOpenApiConsole={() => setIsApiConsoleOpen(true)}
-        onOpenChat={() => setIsChatModalOpen(true)}
-        onOpenDashboard={() => setIsDashboardOpen(true)}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        userPersona={userPersona}
+        setUserPersona={setUserPersona}
       />
 
       {/* Main Dynamic Workspace / Tabs */}
       <main className="flex-1">
+      <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center text-emerald-400"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-400"></div></div>}>
         
         {/* EXPLORE / HOME TAB */}
         {activeTab === 'explore' && (
@@ -220,17 +225,16 @@ export function App() {
           />
         )}
 
-        {/* CERTIFIED SCOUT NETWORK TAB */}
+        {/* SCOUT NETWORK HUB TAB */}
         {activeTab === 'scouts' && (
           <ScoutNetworkHub
-            currency={currency}
             selectedState={selectedState}
             onSelectState={(st) => setSelectedState(st)}
             onOpenSellerWizard={() => setIsSellerWizardOpen(true)}
             onBackToExplore={() => setActiveTab('explore')}
           />
         )}
-
+        </Suspense>
       </main>
 
       {/* Footer */}
@@ -245,8 +249,10 @@ export function App() {
       />
 
       {/* ================= MODALS & OVERLAYS ================= */}
+      <Suspense fallback={null}>
 
       {/* 1. Property / Bundle Deal Room Detail Modal with Masked Details for Guests */}
+      {selectedListing && (
       <PropertyDetailModal
         listing={selectedListing}
         currency={currency}
@@ -257,15 +263,19 @@ export function App() {
         onStartCall={handleStartCall}
         onOpenDashboard={() => setIsDashboardOpen(true)}
       />
+      )}
 
       {/* 2. Seller Wizard Modal for Confidential Relocation Listing */}
+      {isSellerWizardOpen && (
       <SellerWizardModal
         isOpen={isSellerWizardOpen}
         onClose={() => setIsSellerWizardOpen(false)}
         onAddListing={handleAddListing}
       />
+      )}
 
       {/* 3. Authentication & SSO Modal (Google, Apple, Microsoft, Email, OTP) */}
+      {isAuthModalOpen && (
       <AuthModal
         isOpen={isAuthModalOpen}
         initialMode={authModalMode}
@@ -276,8 +286,10 @@ export function App() {
           setIsDashboardOpen(true);
         }}
       />
+      )}
 
       {/* 4. Encrypted Deal Chat Room */}
+      {isChatModalOpen && (
       <ChatModal
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
@@ -285,6 +297,7 @@ export function App() {
         onStartCall={handleStartCall}
         currentUser={currentUser}
       />
+      )}
 
       {/* 5. Live 4K WebRTC Video/Audio Property Inspection Simulator */}
       {activeCallSession && (
@@ -296,12 +309,15 @@ export function App() {
       )}
 
       {/* 6. Demo API Console & Network Inspector */}
+      {isApiConsoleOpen && (
       <ApiConsoleModal
         isOpen={isApiConsoleOpen}
         onClose={() => setIsApiConsoleOpen(false)}
       />
+      )}
 
       {/* 7. Dedicated Buyer vs Seller Account Dashboard Modal */}
+      {isDashboardOpen && (
       <AccountDashboardModal
         isOpen={isDashboardOpen}
         onClose={() => setIsDashboardOpen(false)}
@@ -315,6 +331,8 @@ export function App() {
         onLogout={handleLogout}
         onMarkListingSold={handleMarkListingSold}
       />
+      )}
+      </Suspense>
 
     </div>
   );
