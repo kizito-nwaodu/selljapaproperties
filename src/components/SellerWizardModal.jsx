@@ -418,8 +418,7 @@ export function SellerWizardModal({ isOpen, onClose, onAddListing }) {
                   {/* Image Previews */}
                   {uploadedImages.length > 0 && (
                     <div className="flex gap-2 overflow-x-auto pt-3 pb-1">
-                      {uploadedImages.map((img, idx) => (
-                        <div key={idx} className="relative w-20 h-16 rounded-xl overflow-hidden border border-stone-700 shrink-0 group">
+                      {uploadedImages.map((img, idx) => (\n                        <div key={idx} className="relative w-20 h-16 rounded-xl overflow-hidden border border-stone-700 shrink-0 group">
                           <img src={img} alt="preview" className="w-full h-full object-cover" />
                           <button
                             type="button"
