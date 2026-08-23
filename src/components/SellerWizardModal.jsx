@@ -189,8 +189,8 @@ export function SellerWizardModal({ isOpen, onClose, onAddListing }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="relative w-full max-w-3xl glass-panel-emerald rounded-3xl p-6 sm:p-8 bg-[#0b1410] border border-emerald-500/40 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+      <div className="relative w-full max-w-3xl glass-panel-emerald rounded-3xl p-4 sm:p-8 bg-[#0b1410] border border-emerald-500/40 shadow-2xl overflow-y-auto max-h-[94vh] sm:max-h-[90vh]">
         
         {/* Close Button */}
         <button
