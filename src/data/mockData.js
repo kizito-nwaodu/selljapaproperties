@@ -365,3 +365,188 @@ export const JAPA_STORIES = [
     quote: "As a diaspora buyer living abroad, finding genuine properties in Abuja without getting duped was impossible until SellJapa. Their lawyer-verified title check and physical inspection video gave me 100% confidence. Escrow kept my funds safe until deed registry transfer."
   }
 ];
+
+// Certified On-Ground Scouts across 36 Nigerian States + FCT
+export const CERTIFIED_SCOUTS = [
+  {
+    id: "sct-001",
+    name: "Engr. Kayode Balogun",
+    title: "Registered Surveyor & Drone Inspector",
+    badge: "SURCON Cert #SUR-9481",
+    state: "Lagos",
+    lgas: ["Eti-Osa", "Ikeja", "Lekki", "Ibeju-Lekki", "Surulere"],
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+    rating: 4.98,
+    inspectionsCompleted: 48,
+    totalCommissionEarnedNGN: 24500000,
+    turnaround: "Under 12 Hours",
+    phone: "+234 803 892 1092",
+    email: "kayode.scout@selljapa.ng",
+    specializations: ["4K Drone Aerial Survey", "Title Search at Alausa", "Structural & Damp Inspection"],
+    status: "Available for Missions"
+  },
+  {
+    id: "sct-002",
+    name: "Arc. Maryam Danjuma",
+    title: "Lead Architectural Valuer & Inspector",
+    badge: "ARCON Certified #ARC-3310",
+    state: "Abuja FCT",
+    lgas: ["Maitama", "Guzape", "Asokoro", "Wuse 2", "Gwarinpa"],
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80",
+    rating: 4.96,
+    inspectionsCompleted: 39,
+    totalCommissionEarnedNGN: 19800000,
+    turnaround: "Under 18 Hours",
+    phone: "+234 802 441 8900",
+    email: "maryam.scout@selljapa.ng",
+    specializations: ["AGIS Land Registry Search", "Diplomatic Property Appraisal", "4K Video Walkthrough"],
+    status: "Available for Missions"
+  },
+  {
+    id: "sct-003",
+    name: "Surv. Emeka Okonkwo",
+    title: "Geospatial & Valuation Specialist",
+    badge: "NIS Certified #NIS-7721",
+    state: "Rivers",
+    lgas: ["Port Harcourt Old GRA", "Obio-Akpor", "Trans-Amadi", "Peter Odili"],
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
+    rating: 4.94,
+    inspectionsCompleted: 31,
+    totalCommissionEarnedNGN: 14200000,
+    turnaround: "Under 24 Hours",
+    phone: "+234 805 771 2309",
+    email: "emeka.scout@selljapa.ng",
+    specializations: ["Rivers Lands Bureau Search", "Oil & Industrial Estate Vetting", "Vehicle Asset Diagnostic"],
+    status: "Available for Missions"
+  },
+  {
+    id: "sct-004",
+    name: "Barr. Tunde Adeleke",
+    title: "Property Solicitor & Title Auditor",
+    badge: "NBA Certified #NBA-1194",
+    state: "Oyo",
+    lgas: ["Bodija", "Ibadan North", "Oluyole", "Iyanganku GRA"],
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+    rating: 4.95,
+    inspectionsCompleted: 27,
+    totalCommissionEarnedNGN: 9400000,
+    turnaround: "Under 24 Hours",
+    phone: "+234 818 200 4811",
+    email: "tunde.scout@selljapa.ng",
+    specializations: ["Agodi Secretariat Title Verification", "Whole-House Inventory Inspection", "Deed Registration"],
+    status: "Available for Missions"
+  },
+  {
+    id: "sct-005",
+    name: "Chukwudi Nzeakor",
+    title: "Field Asset Inspector & Drone Pilot",
+    badge: "Certified Asset Inspector #CAI-552",
+    state: "Enugu",
+    lgas: ["Independence Layout", "GRA Enugu", "New Haven", "Trans-Ekulu"],
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80",
+    rating: 4.92,
+    inspectionsCompleted: 22,
+    totalCommissionEarnedNGN: 7800000,
+    turnaround: "Under 24 Hours",
+    phone: "+234 809 311 0022",
+    email: "chukwudi.scout@selljapa.ng",
+    specializations: ["Enugu Ministry of Lands Check", "Solar & Power Inverter Testing", "Live Video Tours"],
+    status: "Available for Missions"
+  }
+];
+
+// Initial Real-time Scout Mission Alerts & Notifications
+export const INITIAL_SCOUT_MISSIONS = [
+  {
+    id: "msn-101",
+    listingId: "jp-001",
+    title: "New Relocation Listing: 4-Bed Duplex + 2021 RAV4 + 5KVA Solar",
+    location: "Lekki Phase 1, Lagos State",
+    state: "Lagos",
+    lga: "Eti-Osa",
+    priceNGN: 145000000,
+    potentialCommissionNGN: 2900000, // 2%
+    urgency: "Expedited (14 Days)",
+    closingTargetDays: 14,
+    status: "Open Mission", // Open Mission, Accepted, In Progress, Report Completed
+    assignedScoutId: null,
+    assignedScoutName: null,
+    timestamp: "4 mins ago",
+    details: "Seller relocating abroad. House has 3 items in bundle (Duplex, 2021 RAV4, 5KVA Solar). Physical inspection + live video walkthrough needed for UK diaspora investor.",
+    tasks: [
+      "Physical structural inspection of 4 bedrooms & compound",
+      "Diagnostic battery test on 5KVA Lithium Inverter system",
+      "Check 2021 RAV4 mileage, engine sound & custom papers",
+      "Upload 4K 360-degree video tour to Deal Room"
+    ]
+  },
+  {
+    id: "msn-102",
+    listingId: "jp-002",
+    title: "New Relocation Listing: 5-Bed Fully Detached Villa + Swimming Pool",
+    location: "Guzape Diplomatic Zone, Abuja FCT",
+    state: "Abuja FCT",
+    lga: "Guzape / Municipal",
+    priceNGN: 260000000,
+    potentialCommissionNGN: 5200000, // 2%
+    urgency: "Urgent (10 Days)",
+    closingTargetDays: 10,
+    status: "Open Mission",
+    assignedScoutId: null,
+    assignedScoutName: null,
+    timestamp: "12 mins ago",
+    details: "Diplomatic family relocation. High-value property with clean FCDA C of O. Requires AGIS title confirmation and pool & borehole pump inspection.",
+    tasks: [
+      "AGIS Title Search verification at Abuja FCDA",
+      "Inspect swimming pool filtration & borehole water treatment",
+      "Verify 100KVA Soundproof Generator runtime",
+      "Host live WebRTC video walkthrough with US diaspora buyer"
+    ]
+  },
+  {
+    id: "msn-103",
+    listingId: "jp-003",
+    title: "New Relocation Listing: 4-Bed Contemporary Duplex in Secure Estate",
+    location: "Old GRA, Port Harcourt, Rivers State",
+    state: "Rivers",
+    lga: "Port Harcourt",
+    priceNGN: 95000000,
+    potentialCommissionNGN: 1900000, // 2%
+    urgency: "Expedited (14 Days)",
+    closingTargetDays: 14,
+    status: "Open Mission",
+    assignedScoutId: null,
+    assignedScoutName: null,
+    timestamp: "28 mins ago",
+    details: "Petroleum engineer relocating to Aberdeen, Scotland. Duplex in gated access-controlled estate. Clean registered deed.",
+    tasks: [
+      "Estate security & access code clearance check",
+      "Rivers Lands Bureau registered survey verification",
+      "Interior finishes & fitted kitchen appliance testing",
+      "Record certified walkthrough commentary"
+    ]
+  },
+  {
+    id: "msn-104",
+    listingId: "jp-004",
+    title: "New Relocation Listing: 4-Bedroom Luxury Duplex + Land Parcel",
+    location: "Bodija Estate, Ibadan, Oyo State",
+    state: "Oyo",
+    lga: "Ibadan North",
+    priceNGN: 78000000,
+    potentialCommissionNGN: 1560000, // 2%
+    urgency: "Standard (21 Days)",
+    closingTargetDays: 21,
+    status: "Open Mission",
+    assignedScoutId: null,
+    assignedScoutName: null,
+    timestamp: "1 hour ago",
+    details: "Academic relocating to Canada. Corner piece property with expansive compound. Clean Oyo State Governor's Consent.",
+    tasks: [
+      "Inspect perimeter fence & boundary beacons",
+      "Verify Governor's Consent at Agodi Secretariat",
+      "Film interior living area & master suite walkthrough",
+      "Submit verified inspection score to SellJapa Engine"
+    ]
+  }
+];
