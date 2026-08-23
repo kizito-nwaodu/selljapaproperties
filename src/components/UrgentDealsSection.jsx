@@ -118,7 +118,7 @@ export function UrgentDealsSection({
                   : 'bg-stone-900 text-amber-300 hover:bg-stone-800 border border-amber-500/20'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <Sparkles className="w-3 h-3" />
               Whole-House Bundles
             </button>
             <button
